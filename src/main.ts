@@ -27,7 +27,7 @@ class ItemManager {
     }
 
     obtenerPorId(item_id: number): Item | undefined {
-        console.log(`Metodo: Buscando ID ${item_id} en el sistema...`);
+        console.log(`Metodo: Buscando ID ${item_id}.`);
         return this.global.find(item => item.id === item_id);
     }
 }
