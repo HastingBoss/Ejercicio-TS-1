@@ -88,7 +88,7 @@ class Compra {
     }
 }
 
-// --- EJECUCIÓN DEL EJERCICIO (PRUEBAS) ---
+// 6. Pruebas
 
 console.log("-GESTIÓN DE CATÁLOGO");
 const manager = new ItemManager();
@@ -108,3 +108,72 @@ const compraHoy = new Compra(99, 888, 50, 90);
 
 console.log("Verificación Venta:", ventaHoy);
 console.log("Verificación Compra:", compraHoy);
+
+class Tienda {
+    nombre: string;
+    inventario: ItemTienda[];
+    lista_ventas: Venta[];
+    lista_compras: Compra[];
+    dinero: number;
+
+    constructor(nombre: string, dinero: number) {
+        this.nombre = nombre;
+        this.dinero = dinero;
+        this.inventario = [];
+        this.lista_ventas = [];
+        this.lista_compras = [];
+    }
+
+    comprar(id_item: number, precio_unitario: number, cantidad: number, margen_esperado: number): void {
+        const costoTotal = precio_unitario * cantidad;
+
+        // 1. Verificamos dinero
+        if (this.dinero < costoTotal) {
+            console.log(`Error: Dinero insuficiente ($${costoTotal}) para comprar ID ${id_item}`);
+            return;
+        }
+
+        // 2. Buscamos item en sistema
+        const itemExistenteCatalogo = manager.obtenerPorId(id_item);
+        if (!itemExistenteCatalogo) {
+            console.log(`Error: El item con ID ${id_item} no existe en el catálogo global.`);
+            return;
+        }
+
+        // 3. Procesamos la transacción
+        this.dinero -= costoTotal;
+        const precioFinal = precio_unitario * (1 + margen_esperado / 100);
+
+        const itemEnInventario = this.inventario.find(item => item.id === id_item);
+        if (itemEnInventario) {
+            itemEnInventario.stock += cantidad;
+            itemEnInventario.precio = precioFinal;
+        } else {
+            // Usamos los datos para crear el push en el inventario
+            this.inventario.push(new ItemTienda(
+                id_item,
+                itemExistenteCatalogo.titulo,
+                itemExistenteCatalogo.descripcion,
+                precioFinal,
+                cantidad
+            ));
+        }
+
+        // Registro de la compra
+        this.lista_compras.push(new Compra(this.lista_compras.length + 1, 0, cantidad, precio_unitario));
+    }
+}
+
+// 7. Pruebas
+
+console.log("-TIENDA");
+const tienda_1 = new Tienda("Tienda 1", 7000);
+console.log("Dinero inicial:", tienda_1.dinero);
+tienda_1.comprar(1, 1400, 2, 20);
+console.log("Dinero actual:", tienda_1.dinero);
+tienda_1.comprar(1, 1500, 2, 20);
+console.log("Dinero actual:", tienda_1.dinero);
+tienda_1.comprar(1, 1500, 2, 20);
+console.log("Dinero actual:", tienda_1.dinero);
+
+
