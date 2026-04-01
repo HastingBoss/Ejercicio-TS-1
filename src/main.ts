@@ -1,135 +1,110 @@
-// 1. Clase Base (Padre)
-class Empanada {
-    sabor: string;
-    precio: number;
-
-    constructor(sabor: string, precio: number) {
-        console.log(`Constructor: Creado base '${sabor}'`);
-        this.sabor = sabor;
-        this.precio = precio;
-    }
-
-    preparar(): void {
-        console.log(`Acción: Preparar relleno de '${this.sabor}'`);
-    }
-
-    obtenerDetalles(): object {
-        console.log(`Detalle: '${this.sabor}'`);
-        return {
-            sabor: this.sabor,
-            precio: this.precio
-        };
-    }
-}
-
-// 2. Clase Derivada (Hijo)
-class EmpanadaEspecial extends Empanada {
-    extra: string;
-
-    constructor(sabor: string, precio: number, extra: string) {
-        super(sabor, precio);
-        this.extra = extra;
-        console.log(`Constructor: Agregado extra '${extra}'`);
-    }
-
-    // Sobrescritura (Overriding)
-    preparar(): void {
-        console.log(`Acción: Iniciando preparación especial '${this.sabor}'`);
-        super.preparar();
-        console.log(`Acción: Agregando extra '${this.extra}'`);
-    }
-
-    obtenerDetalles(): object {
-        console.log(`Detalle Extra: '${this.sabor}'`);
-        const infoBase = super.obtenerDetalles();
-        return {
-            ...infoBase,
-            extra: this.extra
-        };
-    }
-}
-
-// 3. Polimorfismo
-function testPolimorfismo(empanada: Empanada) {
-    console.log(`TEST: '${empanada.sabor.toUpperCase()}'`);
-    empanada.preparar();
-
-    const resumen = empanada.obtenerDetalles();
-    console.log(`Resultado:`, resumen);
-}
-
-//4. Prueba
-const p1 = new Empanada('Carne', 150);
-const p2 = new EmpanadaEspecial('Pollo', 200, 'Queso');
-const p3 = new EmpanadaEspecial('Humita', 250, 'Panceta');
-const p4 = new EmpanadaEspecial('Verdura', 200, 'Queso');
-const p5 = new Empanada('CheeseBurger', 300);
-
-testPolimorfismo(p1);
-testPolimorfismo(p2);
-testPolimorfismo(p3);
-testPolimorfismo(p4);
-testPolimorfismo(p5);
-
-// 5. Class Base Transaccion (Padre)  
-class Transaccion {
+// 1. Clase Item (Base)
+class Item {
     id: number;
+    titulo: string;
+    descripcion: string;
+
+    constructor(id: number, titulo: string, descripcion: string) {
+        this.id = id;
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        console.log(`Constructor: Item '${titulo}' creado.`);
+    }
+
+    describir(): void {
+        console.log(`Metodo: ${this.titulo} - ${this.descripcion} (ID: ${this.id})`);
+    }
+}
+
+// 2. Clase ItemManager
+class ItemManager {
+    global: Item[] = [];
+
+    agregar(id: number, titulo: string, descripcion: string): void {
+        const nuevoItem = new Item(id, titulo, descripcion);
+        this.global.push(nuevoItem);
+        console.log(`Metodo: '${titulo}' añadido al catálogo global.`);
+    }
+
+    obtenerPorId(item_id: number): Item | undefined {
+        console.log(`Metodo: Buscando ID ${item_id} en el sistema...`);
+        return this.global.find(item => item.id === item_id);
+    }
+}
+
+// 3. Clase ItemTienda (Hereda de Item)
+class ItemTienda extends Item {
+    precio: number;
+    stock: number;
+
+    constructor(id: number, titulo: string, descripcion: string, precio: number, stock: number) {
+        super(id, titulo, descripcion);
+        this.precio = precio;
+        this.stock = stock;
+        console.log(`Constructor: Empanada lista para venta con precio $${precio} y stock ${stock}`);
+    }
+
+    describir(): void {
+        super.describir();
+        console.log(`Detalle Tienda: Precio: $${this.precio} | Stock: ${this.stock} unidades.`);
+    }
+}
+
+// 4. Clase Venta
+class Venta {
+    id: number;
+    id_item: number;
+    id_comprador: number;
     cantidad: number;
     precio_unitario: number;
     fecha: Date;
 
-    constructor(id: number, cantidad: number, precio_unitario: number) {
+    constructor(id: number, id_item: number, id_comprador: number, cantidad: number, precio_unitario: number) {
         this.id = id;
+        this.id_item = id_item;
+        this.id_comprador = id_comprador;
         this.cantidad = cantidad;
         this.precio_unitario = precio_unitario;
         this.fecha = new Date();
-        console.log(`Constructor: Transacción #${id} hecha el ${this.fecha.toLocaleDateString()}`);
-    }
-
-    calcularTotal(): number {
-        return this.cantidad * this.precio_unitario;
+        console.log(`Constructor: Venta #${id} registrada el ${this.fecha.toLocaleDateString()}`);
     }
 }
 
-// 5. Class Venta (Hijo)
-class Venta extends Transaccion {
-    id_item: number;
-    id_comprador: number;
-
-    constructor(id: number, id_item: number, id_comprador: number, cantidad: number, precio_unitario: number) {
-        super(id, cantidad, precio_unitario);
-        this.id_item = id_item;
-        this.id_comprador = id_comprador;
-        console.log(`Constructor: Comprador #${id_comprador} realizada.`);
-    }
-
-    generarFactura(): string {
-        return `FACTURA #${this.id} del Item: ${this.id_item} para el Comprador con id: ${this.id_comprador} Total: $${this.calcularTotal()}`;
-    }
-}
-
-// 6. Class Compra (Hijo)   
-class Compra extends Transaccion {
+// 5. Clase Compra
+class Compra {
+    id: number;
     id_vendedor: number;
+    cantidad: number;
+    precio_unitario: number;
+    fecha: Date;
 
     constructor(id: number, id_vendedor: number, cantidad: number, precio_unitario: number) {
-        super(id, cantidad, precio_unitario);
+        this.id = id;
         this.id_vendedor = id_vendedor;
-        console.log(`Constructor: Compra al proveedor con id: ${id_vendedor} registrada.`);
-    }
-
-    generarComprobante(): string {
-        return `COMPRA #${this.id} al Vendedor con id: ${this.id_vendedor} Costo Total: $${this.calcularTotal()}`;
+        this.cantidad = cantidad;
+        this.precio_unitario = precio_unitario;
+        this.fecha = new Date();
+        console.log(`Constructor: Compra #${id} registrada el ${this.fecha.toLocaleDateString()}`);
     }
 }
 
-// 7. Prueba Transacciones
+// --- EJECUCIÓN DEL EJERCICIO (PRUEBAS) ---
 
-console.log(`TEST: Transacciones`);
+console.log("-GESTIÓN DE CATÁLOGO");
+const manager = new ItemManager();
+manager.agregar(1, "Empanada de Carne", "Carne cortada a cuchillo, tradicional");
+manager.agregar(2, "Empanada de Pollo", "Pollo con cebolla de verdeo");
 
-const nuevaVenta = new Venta(1, 101, 500, 12, 150);
-const nuevaCompra = new Compra(4, 999, 100, 90);
+const empanadaBuscada = manager.obtenerPorId(1);
+if (empanadaBuscada) empanadaBuscada.describir();
 
-console.log(`Detalle: ${nuevaVenta.generarFactura()}`);
-console.log(`Detalle: ${nuevaCompra.generarComprobante()}`);
+console.log("-STOCKS DE TIENDA");
+const stockCarne = new ItemTienda(1, "Empanada de Carne", "Tradicional", 150, 100);
+stockCarne.describir();
 
+console.log("-REGISTRO DE MOVIMIENTOS");
+const ventaHoy = new Venta(10, 1, 500, 12, 150);
+const compraHoy = new Compra(99, 888, 50, 90);
+
+console.log("Verificación Venta:", ventaHoy);
+console.log("Verificación Compra:", compraHoy);
